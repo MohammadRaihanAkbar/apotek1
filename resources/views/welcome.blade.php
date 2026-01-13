@@ -99,21 +99,21 @@
                     </p>
                 </div>
 
-                {{-- Quick category pills (dummy) --}}
+                {{-- Quick category pills --}}
                 <div id="kategori" class="mt-6">
                     <p class="text-xs font-semibold text-slate-600 dark:text-zinc-300">Kategori populer</p>
 
                     <div class="mt-3 flex flex-wrap gap-2">
                         @php
-                            $cats = ['Demam', 'Batuk', 'Flu', 'Diare', 'Alergi', 'Vitamin', 'Asam Lambung', 'Kulit'];
+                            $realCategories = \App\Models\Category::take(8)->get();
                         @endphp
 
-                        @foreach ($cats as $c)
+                        @foreach ($realCategories as $c)
                             <button
                                 type="button"
                                 class="rounded-full border border-black/10 bg-white px-4 py-2 text-sm text-slate-700 hover:border-primary-300 hover:bg-primary-50 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-white/5"
                             >
-                                {{ $c }}
+                                {{ $c->name }}
                             </button>
                         @endforeach
                     </div>
@@ -149,7 +149,7 @@
                 </div>
 
                 <p class="mt-4 text-xs text-slate-500 dark:text-zinc-400">
-                    *Nanti bagian ini bisa kamu isi alamat/jam buka beneran dari database.
+                    *Data etalase di bawah sudah terhubung ke Admin CRUD kamu.
                 </p>
             </div>
         </div>
@@ -161,7 +161,7 @@
             <div>
                 <h2 class="text-2xl font-bold">Etalase obat</h2>
                 <p class="mt-1 text-sm text-slate-600 dark:text-zinc-300">
-                    Scroll ke samping untuk lihat obat lain (nanti akan otomatis sesuai database).
+                    Scroll ke samping untuk lihat obat lain (data asli dari database).
                 </p>
             </div>
 
@@ -175,30 +175,30 @@
             {{-- “Carousel” tanpa library: horizontal scroll + snap --}}
             <div class="flex gap-4 overflow-x-auto pb-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory">
                 @php
-                    $items = [
-                        ['name' => 'Paracetamol 500mg', 'cat' => 'Demam', 'price' => '12.000'],
-                        ['name' => 'OBH Komix', 'cat' => 'Batuk', 'price' => '18.000'],
-                        ['name' => 'Oralit', 'cat' => 'Diare', 'price' => '9.000'],
-                        ['name' => 'Antimo', 'cat' => 'Mual', 'price' => '7.000'],
-                        ['name' => 'Vitamin C', 'cat' => 'Vitamin', 'price' => '15.000'],
-                        ['name' => 'Cetirizine', 'cat' => 'Alergi', 'price' => '22.000'],
-                    ];
+                    $realProducts = \App\Models\Product::with('category')->get();
                 @endphp
 
-                @foreach ($items as $it)
+                @foreach ($realProducts as $it)
                     <article class="snap-start w-[260px] shrink-0 rounded-3xl border border-black/5 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-zinc-900">
                         {{-- Foto --}}
                         <div class="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-primary-100 dark:bg-white/10">
-                            {{-- nanti ganti jadi <img src="..."> --}}
-                            <div class="h-full w-full bg-gradient-to-br from-primary-200 to-primary-50 dark:from-white/10 dark:to-white/5"></div>
+                            @if($it->image)
+                                <img src="{{ Storage::url($it->image) }}" alt="{{ $it->name }}" class="h-full w-full object-cover transform hover:scale-110 transition-transform duration-500">
+                            @else
+                                <div class="h-full w-full bg-gradient-to-br from-primary-200 to-primary-50 dark:from-white/10 dark:to-white/5 flex items-center justify-center text-primary-400">
+                                    <svg class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                            @endif
                         </div>
 
                         <div class="mt-3">
-                            <p class="text-sm font-semibold leading-snug">{{ $it['name'] }}</p>
-                            <p class="mt-1 text-xs text-slate-500 dark:text-zinc-400">{{ $it['cat'] }}</p>
+                            <p class="text-sm font-semibold leading-snug">{{ $it->name }}</p>
+                            <p class="mt-1 text-xs text-slate-500 dark:text-zinc-400">{{ $it->category->name ?? 'Obat' }}</p>
 
                             <div class="mt-3 flex items-center justify-between">
-                                <p class="text-sm font-bold text-primary-700 dark:text-primary-200">Rp {{ $it['price'] }}</p>
+                                <p class="text-sm font-bold text-primary-700 dark:text-primary-200">Rp {{ number_format($it->price, 0, ',', '.') }}</p>
                                 <button class="rounded-xl border border-black/10 px-3 py-2 text-xs font-semibold hover:bg-primary-50 dark:border-white/10 dark:hover:bg-white/5">
                                     Detail
                                 </button>
@@ -209,7 +209,7 @@
             </div>
 
             <p class="mt-2 text-xs text-slate-500 dark:text-zinc-400">
-                *Nanti card ini ambil data dari tabel products (foto + harga + kategori).
+                *Etalase ini otomatis terupdate saat kamu menambah obat di halaman Admin.
             </p>
         </div>
     </section>
@@ -238,7 +238,7 @@
             </div>
 
             <p class="mt-8 text-xs text-slate-500 dark:text-zinc-400">
-                Staff login: buka langsung <span class="font-semibold">/login</span>
+                &copy; {{ date('Y') }} Apotek Kita. All rights reserved.
             </p>
         </div>
     </section>

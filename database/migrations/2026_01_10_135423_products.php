@@ -21,6 +21,12 @@ return new class extends Migration {
 
             $table->string('image')->nullable();
 
+            $table->text('indikasi_umum')->nullable();
+            $table->text('komposisi')->nullable();
+            $table->text('dosis')->nullable();
+            $table->text('efek_samping')->nullable();
+            $table->string('no_registrasi')->nullable();
+
             $table->integer('stock')->default(0);
             $table->decimal('price', 12, 2)->default(0);
 
