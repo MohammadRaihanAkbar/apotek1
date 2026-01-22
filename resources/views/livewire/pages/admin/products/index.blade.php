@@ -1,13 +1,11 @@
 <?php
 
-use function Livewire\Volt\{state, with, usesPagination};
+use function Livewire\Volt\{state, with, usesPagination, uses, computed};
 use Livewire\WithFileUploads;
 use App\Models\Product;
 use App\Models\Category;
 
 usesPagination();
-usesPagination();
-use function Livewire\Volt\{uses};
 uses(WithFileUploads::class);
 
 state([
@@ -21,6 +19,7 @@ state([
     'dosis' => '',
     'efek_samping' => '',
     'no_registrasi' => '',
+    'expired_date' => '',
     'is_active' => true,
     'image' => null, // New image file
     'existing_image' => null, // Current image path
@@ -28,13 +27,19 @@ state([
     'search' => ''
 ]);
 
-with(fn () => [
-    'products' => Product::with('category')
-        ->where('name', 'like', '%' . $this->search . '%')
-        ->orWhere('kode_obat', 'like', '%' . $this->search . '%')
+$products = computed(function () {
+    return Product::with('category')
+        ->where(function($query) {
+            $query->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('kode_obat', 'like', '%' . $this->search . '%');
+        })
         ->latest()
-        ->paginate(10),
+        ->paginate(10);
+});
+
+with(fn () => [
     'categories' => Category::all(),
+    'products' => $this->products,
     'editingProductId' => $this->editingProductId,
     'name' => $this->name,
     'kode_obat' => $this->kode_obat,
@@ -63,6 +68,7 @@ $resetFields = function () {
     $this->dosis = '';
     $this->efek_samping = '';
     $this->no_registrasi = '';
+    $this->expired_date = '';
     $this->is_active = true;
     $this->image = null;
     $this->existing_image = null;
@@ -77,6 +83,7 @@ $save = function () {
         'stock' => 'required|integer',
         'price' => 'required|numeric',
         'image' => 'nullable|image|max:2048', // 2MB max
+        'expired_date' => 'nullable|date',
     ]);
 
     $data = [
@@ -90,6 +97,7 @@ $save = function () {
         'dosis' => $this->dosis,
         'efek_samping' => $this->efek_samping,
         'no_registrasi' => $this->no_registrasi,
+        'expired_date' => $this->expired_date ?: null,
         'is_active' => $this->is_active,
     ];
 
@@ -118,6 +126,7 @@ $edit = function ($id) {
     $this->stock = $product->stock;
     $this->price = $product->price;
     $this->no_registrasi = $product->no_registrasi;
+    $this->expired_date = $product->expired_date ? $product->expired_date->format('Y-m-d') : '';
     $this->is_active = $product->is_active;
     $this->existing_image = $product->image;
     $this->image = null;
@@ -200,6 +209,13 @@ $delete = function ($id) {
                                     <label class="block text-gray-700 text-sm font-bold mb-2">No. Registrasi (BPOM)</label>
                                     <input type="text" wire:model="no_registrasi"
                                         class="w-full border-gray-300 rounded-lg shadow-sm">
+                                </div>
+
+                                <div>
+                                    <label class="block text-gray-700 text-sm font-bold mb-2">Tanggal Kadaluarsa</label>
+                                    <input type="date" wire:model="expired_date"
+                                        class="w-full border-gray-300 rounded-lg shadow-sm">
+                                    @error('expired_date') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
 
                                 <div class="md:col-span-3">

@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
-Route::view('/', 'welcome');
+Volt::route('/', 'pages.home')->name('home');
 
 // Admin Routes
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -25,6 +25,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Stock Movements (accessible by all authenticated users)
     Volt::route('admin/stock-movements', 'pages.admin.stock-movements.index')
         ->name('admin.stock-movements');
+
+    // Expired Products (accessible by all authenticated users)
+    Volt::route('admin/expired-products', 'pages.admin.expired-products.index')
+        ->name('admin.expired-products');
 
     // User Management (superadmin only)
     Volt::route('admin/users', 'pages.admin.users.index')
